@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 
 	"github.com/duiliofanton/go-shorten-url/internal/config"
 	"github.com/duiliofanton/go-shorten-url/internal/models"
@@ -19,6 +20,10 @@ type SQLiteURLRepository struct {
 }
 
 func NewSQLiteURLRepository(cfg config.DatabaseConfig) (*SQLiteURLRepository, error) {
+	if err := os.MkdirAll(cfg.Dir, 0o755); err != nil {
+		return nil, fmt.Errorf("failed to create database directory: %w", err)
+	}
+
 	connStr := fmt.Sprintf("%s/%s?cache=shared&mode=rwc&_loc=auto", cfg.Dir, cfg.Name)
 
 	db, err := sql.Open("sqlite3", connStr)
