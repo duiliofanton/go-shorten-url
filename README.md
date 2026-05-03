@@ -2,6 +2,8 @@
 
 A production-ready URL shortener service built with Go, following senior-level architecture patterns.
 
+**Live demo:** https://gsu.duiliofanton.com.br
+
 ## Features
 
 - **CRUD Operations**: Create, Read, Update, Delete URLs
@@ -72,13 +74,13 @@ All API endpoints (except `/health`, `/metrics` and `/{shortCode}`) require an A
 
 ```bash
 # Header
-curl -X POST http://localhost:8080/api/urls \
+curl -X POST https://gsu.duiliofanton.com.br/api/urls \
   -H "X-API-Key: your-secure-api-key" \
   -H "Content-Type: application/json" \
   -d '{"original": "https://google.com"}'
 
 # Or query param
-curl "http://localhost:8080/api/urls?api_key=your-secure-api-key"
+curl "https://gsu.duiliofanton.com.br/api/urls?api_key=your-secure-api-key"
 ```
 
 ## Usage
@@ -86,7 +88,7 @@ curl "http://localhost:8080/api/urls?api_key=your-secure-api-key"
 ### Create URL
 
 ```bash
-curl -X POST http://localhost:8080/api/urls \
+curl -X POST https://gsu.duiliofanton.com.br/api/urls \
   -H "X-API-Key: your-secure-api-key" \
   -H "Content-Type: application/json" \
   -d '{"original": "https://google.com"}'
@@ -106,15 +108,15 @@ Response:
 ### Redirect
 
 ```bash
-curl -I http://localhost:8080/a1b2c3
-# HTTP/1.1 302 Found
-# Location: https://google.com
+curl -I https://gsu.duiliofanton.com.br/a1b2c3
+# HTTP/2 302
+# location: https://google.com
 ```
 
 ### List URLs
 
 ```bash
-curl "http://localhost:8080/api/urls?page=1&per_page=10" \
+curl "https://gsu.duiliofanton.com.br/api/urls?page=1&per_page=10" \
   -H "X-API-Key: your-secure-api-key"
 ```
 
