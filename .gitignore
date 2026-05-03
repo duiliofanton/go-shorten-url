@@ -1,0 +1,20 @@
+# Binaries
+bin/
+*.exe
+
+# Data
+data/
+*.sqlite
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Coverage
+coverage.out
+
+# Env
+.env

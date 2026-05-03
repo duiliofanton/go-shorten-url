@@ -1,0 +1,292 @@
+openapi: 3.0.3
+info:
+  title: URL Shortener API
+  description: A production-ready URL shortener service
+  version: 1.0.0
+  contact:
+    name: Duilio Fanton
+    email: duilio@example.com
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns the health status of the service
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      description: Returns Prometheus-format metrics
+      operationId: getMetrics
+      responses:
+        '200':
+          description: Metrics data
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /api/urls:
+    get:
+      summary: List all URLs
+      description: Get all shortened URLs with pagination
+      operationId: listURLs
+      parameters:
+        - name: page
+          in: query
+          description: Page number (default 1)
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: Items per page (default 10)
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of URLs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListURLsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create a short URL
+      description: Create a new shortened URL
+      operationId: createURL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateURLRequest'
+      responses:
+        '201':
+          description: URL created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/URLResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/urls/{id}:
+    get:
+      summary: Get URL by ID
+      description: Retrieve a specific URL by its ID
+      operationId: getURLById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: URL ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: URL found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/URLResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Update URL
+      description: Update an existing URL
+      operationId: updateURL
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: URL ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateURLRequest'
+      responses:
+        '200':
+          description: URL updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/URLResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete URL
+      description: Delete a specific URL
+      operationId: deleteURL
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: URL ID
+          schema:
+            type: string
+      responses:
+        '204':
+          description: URL deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /{shortCode}:
+    get:
+      summary: Redirect to original URL
+      description: Redirect to the original URL using short code
+      operationId: redirect
+      parameters:
+        - name: shortCode
+          in: path
+          required: true
+          description: Short code
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to original URL
+          headers:
+            Location:
+              schema:
+                type: string
+                example: https://google.com
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+
+    CreateURLRequest:
+      type: object
+      required:
+        - original
+      properties:
+        original:
+          type: string
+          format: uri
+          example: https://google.com
+
+    UpdateURLRequest:
+      type: object
+      required:
+        - original
+      properties:
+        original:
+          type: string
+          format: uri
+          example: https://google.com
+
+    URLResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 550e8400-e29b-41d4-a716-446655440000
+        original:
+          type: string
+          example: https://google.com
+        short_code:
+          type: string
+          example: abc123
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ListURLsResponse:
+      type: object
+      properties:
+        urls:
+          type: array
+          items:
+            $ref: '#/components/schemas/URLResponse'
+        total:
+          type: integer
+          example: 100
+        page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 10
+        total_pages:
+          type: integer
+          example: 10
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
